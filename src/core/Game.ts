@@ -1,6 +1,7 @@
 import {GamePad} from "./GamePad";
 import {UnitMap} from "./UnitMap";
 import {CommonUtil} from "../util/CommonUtil";
+import {EventEmitter} from "./EventEmitter";
 enum GameStatus{
     INITIALIZED = 0,
     READY = 1,
@@ -8,7 +9,7 @@ enum GameStatus{
     PAUSED = 3,
     END = 4
 }
-export class Game{
+export class Game extends EventEmitter{
     private _canvas:HTMLCanvasElement;
     private _speed:number;
     private _record:number;
@@ -19,6 +20,7 @@ export class Game{
     private _gap:number;
     
     constructor(_canvas:HTMLCanvasElement,_speed:number=100,_columns:number=12,_rows:number=20,_gap:number=2){
+        super();
         this._canvas = _canvas;
         this._speed = _speed; 
         this._columns = _columns;
@@ -33,6 +35,7 @@ export class Game{
     
     set speed(value:number){
         this._speed = value;
+        this._gamePad.speed = this._speed;
     }
     
     get speed():number{
@@ -49,8 +52,19 @@ export class Game{
         if(!this._gamePad){
             let map = new UnitMap(this._rows,this._columns);
             this._gamePad = new GamePad(map,this._canvas.getContext("2d"),unitWidth,this._gap,"#CCCCCC",this._speed);
+            this._gamePad.addListener(GamePad.EVENT_CLEAN_RECORD_UPDATE,(e:Object)=>{
+                this._record = e['record'];
+                this.dispatchEvent(e);
+            });
+            this._gamePad.addListener(GamePad.EVENT_GAME_OVER,(e:Object)=>{
+                this._status = GameStatus.END;
+                this.dispatchEvent(e);
+            });
             this._gamePad.cleanPad();
             this._status = GameStatus.READY;
+            document.body.addEventListener("keydown",(event:KeyboardEvent)=>{
+                this.keyDownHandler(event);
+            });
         }
         
     }
@@ -60,21 +74,22 @@ export class Game{
         this._gamePad.cleanPad();
         this._gamePad.generateNextShape();
         this._status = GameStatus.STARTING;
-        document.body.addEventListener("keydown",(event:KeyboardEvent)=>{
-            this.keyDownHandler(event);
-        });
+        this._record = 0;
     }
     
     pause():void{
-        
-    }
-    
-    restart():void{
-        
+        if(this._status === GameStatus.STARTING){
+            this._gamePad.pause();
+            this._status = GameStatus.PAUSED;
+        }else if(this._status === GameStatus.PAUSED){
+            this._gamePad.resume();
+            this._status = GameStatus.STARTING;
+        }
     }
     
     end():void{
-        
+        this._status = GameStatus.END;
+        this._gamePad.reset();
     }
     
     private keyDownHandler(event:KeyboardEvent):void{
@@ -98,4 +113,7 @@ export class Game{
             this._gamePad.teleportDown();
         }
     }
+    
+    static EVENT_GAME_OVER:string = "game_over";
+    static EVENT_CLEAN_RECORD_UPDATE = "clean_record_update";
 }

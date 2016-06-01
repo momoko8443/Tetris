@@ -1,0 +1,27 @@
+<uku-component>
+    <template>
+        <div>
+            <span uku-text="cc.currentScore" style="font-size:128pt"></span><br>
+            <span uku-text="cc.currentLevel" style="font-size:32pt"></span>
+        </div>
+    </template>
+    <script>
+        (function(){
+            return function(uku){
+                this.currentLevel = 1;
+                this.currentScore = 0;
+                Object.defineProperty(this, "score", {
+                    set: function (value) {
+                        this.currentScore = value;
+                    }
+                });
+                
+                Object.defineProperty(this, "level", {
+                    set: function (value) {
+                        this.currentLevel = "Lv. " + value;
+                    }
+                });
+            };
+        })();
+    </script>
+</uku-component>

@@ -1,0 +1,76 @@
+<!DOCTYPE>
+
+<html>
+
+<head>
+    <title>Tetris</title>
+    <link rel="stylesheet" type="text/css" href="style/main.css">
+    <link rel="stylesheet" type="text/css" href="lib/bootstrap/css/bootstrap.min.css">
+    <script src="lib/ukujs/uku.js"></script>
+</head>
+
+<body uku-application>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <game-pad id="gamePanel"></game-pad>
+            </div>
+            <div class="col-md-6">
+                <score id="scorePanel" uku-score="mainCtrl.score" uku-level="mainCtrl.level"></score>
+                <controller id="controllerPanel"></controller>
+            </div>
+        </div>
+        
+        
+        
+    </div>
+    
+</body>
+<script>
+    var uku = new Ukulele();
+    var mainCtrl = new MainController(uku);
+    uku.registerController('mainCtrl',mainCtrl);
+    uku.registerComponent('game-pad','component/gamepad.html');
+    uku.registerComponent('controller','component/controller.html');
+    uku.registerComponent('score','component/score.html');
+    uku.addListener(Ukulele.INITIALIZED,function(e){
+        document.getElementById('controllerPanel').addEventListener('game_controller_action',function(e){
+            mainCtrl.responseControllerAction(e.data.action);
+        });
+    });
+    uku.init();
+    
+    function MainController(uku){
+        this.action = "";
+        this.score = 0;
+        this.level = 1;
+        var self = this;
+        this.responseControllerAction = function(_action){
+            if(_action === "start"){
+                uku.getComponentController('gamePanel').start();
+                document.getElementById("gamePanel").addEventListener("score_changed",function(e){
+                    self.score = e.data.score;
+                    uku.refresh();
+                });
+                document.getElementById("gamePanel").addEventListener("level_up",function(e){
+                    self.level = e.data.level;
+                    uku.refresh();
+                });
+            }else if(_action === "pause"){
+                uku.getComponentController('gamePanel').pause();
+            }else if(_action === "stop"){
+                self.score = 0;
+                self.level = 1;
+                uku.getComponentController('gamePanel').stop();
+                uku.refresh();
+            }else if(_action === "restart"){
+                self.score = 0;
+                self.level = 1;
+                uku.getComponentController('gamePanel').restart();
+                uku.refresh();
+            }         
+        };
+    }
+</script>
+
+</html>

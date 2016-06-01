@@ -1,0 +1,62 @@
+<uku-component>
+    <template>
+        <div>
+            <div class="panel panel-default">
+                <div class="panel-heading">Tetris</div>
+                <div class="panel-body">
+                    <canvas id="myCanvas" width="100px" height="100px"></canvas>
+                </div>
+            </div> 
+        </div>
+    </template>
+    <script src="lib/tetris/tetris.js"></script>
+    <script>
+        (function(Tetris){
+            return function(uku){
+                var tetris = null;
+                var self = this;
+                var level = 1;
+                var total = 0;
+                this.start = function(){
+                    tetris.start(); 
+                };
+                this.pause = function(){
+                    tetris.pause();
+                };
+                this.stop = function(){
+                    level = 1;
+                    total = 0;
+                    tetris.end();
+                };
+                this.restart = function(){
+                    this.stop();
+                    tetris.start();
+                };
+                
+                init();
+                function init(){
+                    var canvas = document.getElementById('myCanvas');
+                    var canvasHeight = document.body.clientHeight - 100;
+                    var canvasWidth = 12 * canvasHeight / 20;
+                    canvas.setAttribute("width", canvasWidth);
+                    canvas.setAttribute("height", canvasHeight);
+                    tetris = new Tetris(canvas,300);
+                    
+                    tetris.addListener(Tetris.EVENT_CLEAN_RECORD_UPDATE,function(e){
+                        var num = e.record;
+                        var base = num * 100;
+                        var bonus = (Math.sqrt(num)) * base;
+                        var score = Math.floor(bonus);
+                        total += score;
+                        if(total > level * 10000){
+                            level++;
+                            self.fire('level_up',{level:level});
+                            tetris.speed = 300 - 30 * level;
+                        }
+                        self.fire('score_changed',{score:total});
+                    });
+                }
+            };
+        })(Game);
+    </script>
+</uku-component>

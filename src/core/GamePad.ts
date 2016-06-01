@@ -17,6 +17,18 @@ enum SoundType{
     clean = 2,
     over = 3
 }
+var libPath:string;
+(function(){
+    let libs:HTMLCollection = document.scripts;
+    for (let index = 0; index <libs.length; index++) {
+        let script:HTMLScriptElement = libs[index] as HTMLScriptElement;
+        if(script.src.search('tetris.js') !== -1){
+            libPath = script.src.split('tetris.js')[0];
+            break;
+        }
+        
+    }
+})();
 
 export class GamePad extends EventEmitter{
     
@@ -43,7 +55,6 @@ export class GamePad extends EventEmitter{
         this.cleanRowsCount = 0;
         
     }
-
 
     render(shape: BaseShape): void {
         let unitArray = this.map.unitArray;
@@ -108,6 +119,18 @@ export class GamePad extends EventEmitter{
         
     }
     
+    reset():void{
+        clearTimeout(this.timer);
+        this.cleanPad(); 
+    }
+    
+    pause():void{
+        clearTimeout(this.timer);
+    }
+    resume():void{
+        this.autoDown();
+    }
+    
     updatePad():void{
         let cleanLineCount = this.cleanRow();
         if(cleanLineCount == -1)
@@ -121,8 +144,7 @@ export class GamePad extends EventEmitter{
             if(cleanLineCount > 0)
             {
                 this.playSound(SoundType.clean);
-                this.cleanRowsCount += cleanLineCount;
-                this.dispatchEvent({'eventType':GamePad.EVENT_CLEAN_RECORD_UPDATE,'record':this.cleanRowsCount});
+                this.dispatchEvent({'eventType':GamePad.EVENT_CLEAN_RECORD_UPDATE,'record':cleanLineCount});
             }
             this.generateNextShape();
         }
@@ -250,16 +272,16 @@ export class GamePad extends EventEmitter{
         switch(soundType)
         {
             case SoundType.rotate:
-                url = "asset/sound/effect1.mp3";
+                url = libPath + "asset/sound/effect1.mp3";
                 break;
             case SoundType.land:
-                url = "asset/sound/effect1.mp3";
+                url = libPath + "asset/sound/effect1.mp3";
                 break;
             case SoundType.clean:
-                url = "asset/sound/effect3.mp3";
+                url = libPath + "asset/sound/effect3.mp3";
                 break;
             case SoundType.over:
-                url = "asset/sound/gameover.mp3";
+                url = libPath + "asset/sound/gameover.mp3";
                 break;
         }
         if(this.soundPlayer.src !== url){

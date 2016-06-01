@@ -1,0 +1,46 @@
+<uku-component>
+    <template>
+        <div>
+            <a uku-onclick="cc.doAction('start')" class="btn btn-default" style="width:200px" href="#" role="button" uku-text="cc.startBtnLabel"></a><br>
+            <a uku-onclick="cc.doAction('pause')" class="btn btn-default" style="width:200px" href="#" role="button" uku-text="cc.pauseBtnLabel" ></a><br>
+            <a uku-onclick="cc.doAction('restart')" class="btn btn-default" style="width:200px" href="#" role="button">Restart</a>
+        </div>
+    </template>
+    <script>
+        (function(){
+            return function(uku){
+                this.startBtnLabel = "Start";
+                this.pauseBtnLabel = "Pause";
+                this.doAction = function(action){
+                    if(action === "start"){
+                        if(this.startBtnLabel === "Start"){
+                            this.startBtnLabel = "Stop";
+                        }else{
+                            action = "stop"
+                            this.startBtnLabel = "Start";
+                            this.pauseBtnLabel = "Pause";
+                        }
+                        uku.refresh();
+                    }
+                    if(action === "pause"){
+                        if(this.startBtnLabel === "Stop"){
+                            if(this.pauseBtnLabel === "Pause"){
+                                this.pauseBtnLabel = "Resume";
+                            }else{
+                                this.pauseBtnLabel = "Pause";
+                            }
+                            uku.refresh();
+                        }else{
+                            return;
+                        }   
+                    }
+                    if(action === "restart"){
+                        this.startBtnLabel = "Stop";
+                        this.pauseBtnLabel = "Pause";
+                    }
+                    this.fire('game_controller_action',{'action':action});    
+                };
+            };
+        })();
+    </script>
+</uku-component>

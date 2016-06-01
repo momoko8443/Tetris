@@ -1,0 +1,22 @@
+.hbox{
+    display: flex;
+    display: -webkit-flex;
+    
+    flex-direction:row;
+    justify-content:center;
+    align-items: center ;
+}
+
+.item{
+    flex-grow: 1;
+    width:1px;
+}
+
+.vbox{
+    display: flex;
+    display: -webkit-flex;
+    
+    flex-direction:column;
+    justify-content:center;
+    align-items: center ;
+}
